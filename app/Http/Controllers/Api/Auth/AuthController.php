@@ -6,6 +6,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
+
 
 class AuthController extends Controller
 {
@@ -72,6 +75,19 @@ class AuthController extends Controller
             'token' => $token   
         ]);
     }
+
+    public function logout(Request $request)
+    {
+        try {
+            // Invalidate the token
+            JWTAuth::invalidate(JWTAuth::getToken());
+
+            return $this->responseJson(200, 'Logout successful!');
+        } catch (JWTException $e) {
+            return $this->responseJson(500, 'Logout failed, please try again.');
+        }
+    }
+
 
     /**
      * Create a JSON response.
