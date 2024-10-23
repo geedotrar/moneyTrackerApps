@@ -4,21 +4,44 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Permission;
+use App\Models\Role;
 
 class PermissionsSeeder extends Seeder
 {
     public function run()
     {
-        $permissions = [
-            ['name' => 'create-users'],
-            ['name' => 'edit-users'],
-            ['name' => 'delete-users'],
-            ['name' => 'view-users'],
+        $adminPermissions = [
+            ['name' => 'admin-create-users'],
+            ['name' => 'admin-edit-users'],
+            ['name' => 'admin-delete-users'],
+            ['name' => 'admin-view-users'],
         ];
 
-        foreach ($permissions as $permission) {
-            if (Permission::where('name', $permission['name'])->doesntExist()) {
-                Permission::create($permission);
+        $userPermissions = [
+            ['name' => 'user-view-users'],
+        ];
+
+        foreach ($adminPermissions as $perm) {
+            $permission = Permission::create($perm);
+
+            $adminRole = Role::where('name', 'admin')->first();
+            if ($adminRole) {
+                $adminRole->permissions()->attach($permission->name, [  
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+            }
+        }
+
+        foreach ($userPermissions as $perm) {
+            $permission = Permission::create($perm);
+
+            $userRole = Role::where('name', 'user')->first();
+            if ($userRole) {
+                $userRole->permissions()->attach($permission->name, [ 
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
             }
         }
     }

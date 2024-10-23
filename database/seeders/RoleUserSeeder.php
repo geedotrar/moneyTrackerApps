@@ -10,17 +10,18 @@ class RoleUserSeeder extends Seeder
 {
     public function run()
     {
-        $user1 = User::where('email', 'admin@mail.com')->first();
-        // $user2 = User::where('email', 'user@mail.com')->first();
-        $adminRole = Role::where('name', 'admin')->first();
-        // $userRole = Role::where('name', 'user')->first();
+        $adminUser = User::where('email', 'admin@admin.com')->first();
+        $normalUser = User::where('email', 'user@user.com')->first();
 
-        if ($user1 && $adminRole) {
-            $user1->roles()->syncWithoutDetaching([$adminRole->id]);
+        $adminRole = Role::where('name', 'admin')->first();
+        $userRole = Role::where('name', 'user')->first();
+
+        if ($adminUser && $adminRole) {
+            $adminUser->roles()->attach($adminRole);
         }
 
-        // if ($user2 && $userRole) {
-        //     $user2->roles()->syncWithoutDetaching([$userRole->id]);
-        // }
+        if ($normalUser && $userRole) {
+            $normalUser->roles()->attach($userRole);
+        }
     }
 }

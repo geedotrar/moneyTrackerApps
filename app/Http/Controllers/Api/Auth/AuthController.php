@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
@@ -39,6 +40,11 @@ class AuthController extends Controller
             'password'  => bcrypt($request->password)
         ]);
 
+        $userRole = Role::where('name', 'user')->first();
+            if ($userRole) {
+                $user->roles()->attach($userRole);
+            }
+            
         // Return response JSON user is created
         if ($user) {
             return $this->responseJson(201, 'User created successfully', $user);

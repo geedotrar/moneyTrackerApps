@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\User;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -72,6 +73,11 @@ class UserController extends Controller
                 'password' => bcrypt($validatedData['password']),
             ]);
 
+            $userRole = Role::where('name', 'user')->first();
+            if ($userRole) {
+                $user->roles()->attach($userRole);
+            }
+    
             return $this->responseJson(200, 'User Created Successfully', $user);
         } catch (Exception $e) {
             return $this->responseJson(500, 'An error occurred', $e->getMessage());
