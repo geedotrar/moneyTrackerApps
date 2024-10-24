@@ -21,24 +21,26 @@ class PermissionsSeeder extends Seeder
             ['name' => 'user-view-users'],
         ];
 
+        // Seed admin permissions
         foreach ($adminPermissions as $perm) {
-            $permission = Permission::create($perm);
+            $permission = Permission::firstOrCreate($perm);
 
             $adminRole = Role::where('name', 'admin')->first();
             if ($adminRole) {
-                $adminRole->permissions()->attach($permission->name, [  
+                $adminRole->permissions()->syncWithoutDetaching($permission->name, [  
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
             }
         }
 
+        // Seed user permissions
         foreach ($userPermissions as $perm) {
-            $permission = Permission::create($perm);
+            $permission = Permission::firstOrCreate($perm);
 
             $userRole = Role::where('name', 'user')->first();
             if ($userRole) {
-                $userRole->permissions()->attach($permission->name, [ 
+                $userRole->permissions()->syncWithoutDetaching($permission->name, [ 
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);

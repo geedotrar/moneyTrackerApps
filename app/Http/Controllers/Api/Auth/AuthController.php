@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Role;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
@@ -23,8 +24,9 @@ class AuthController extends Controller
     {
         // Set validation
         $validator = Validator::make($request->all(), [
-            'name'      => 'required',
+            'username'  => 'required|unique:users',
             'email'     => 'required|email|unique:users',
+            'name'      => 'required',
             'password'  => 'required|min:8|confirmed'
         ]);
 
@@ -35,6 +37,7 @@ class AuthController extends Controller
 
         // Create user
         $user = User::create([
+            'username'  => $request->username,
             'name'      => $request->name,
             'email'     => $request->email,
             'password'  => bcrypt($request->password)
@@ -58,7 +61,7 @@ class AuthController extends Controller
     {
          // Set validation for login
          $validator = Validator::make($request->all(), [
-            'email'     => 'required|email',
+            'identity'     => 'required',
             'password'  => 'required'
         ]);
 
@@ -67,17 +70,23 @@ class AuthController extends Controller
             return $this->responseJson(422, $validator->errors()->first());
         }
 
-        // Get credentials from request
-        $credentials = $request->only('email', 'password');
+        $identity = $request->input('identity');
+        $password = $request->input('password');
 
+        $user = User::where('email',$identity)
+                    ->orWhere('username',$identity)
+                    ->first();
+                    
         // If auth failed
-        if (!$token = auth()->guard('api')->attempt($credentials)) {
-            return $this->responseJson(401, 'Email or Password wrong');
+        if (!$user || !Hash::check($password, $user->password)) {
+            return $this->responseJson(401, 'Email/Username or Password wrong');
         }
-
+    
+        $token = auth()->guard('api')->login($user);
+    
         // If auth success
         return $this->responseJson(200, 'Login successful', [
-            'user' => auth()->guard('api')->user(),
+            'user' => $user,
             'token' => $token   
         ]);
     }
