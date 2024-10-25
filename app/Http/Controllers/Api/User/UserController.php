@@ -129,7 +129,7 @@ class UserController extends Controller
             return $this->responseJson(404, 'User not found');
         } catch (Exception $e) {
             return $this->responseJson(500, 'An error occurred', $e->getMessage());
-        }
+        } 
     }
     
     private function responseJson(int $status, string $message, $data = null)
