@@ -9,6 +9,7 @@ use App\Models\Role;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class UserController extends Controller
 {
@@ -19,9 +20,23 @@ class UserController extends Controller
                 return $this->responseJson(401, 'Unauthorized');
             }
 
-            $users = User::all();
+            $cacheKey = 'users_all';
 
-            if ($users->isEmpty()) {
+            // Try to get users from Redis cache
+            $users = Cache::store('redis')->get($cacheKey);
+
+            if ($users === null) {
+                // If not found in cache, retrieve from database
+                $users = User::all();
+
+                // Store the retrieved users in Redis cache for 1 hour
+                Cache::store('redis')->put($cacheKey, $users, 60 * 60 * 24);
+            } else {
+                // If users were found in cache, decode them (if needed)
+                $users = json_decode($users);
+            }
+
+            if (empty($users)) {
                 return $this->responseJson(404, 'No users found');
             }
 

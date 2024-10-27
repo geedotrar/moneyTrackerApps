@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Support\Facades\Cache;
+
 
 
 class AuthController extends Controller
@@ -44,10 +46,13 @@ class AuthController extends Controller
         ]);
 
         $userRole = Role::where('name', 'user')->first();
-            if ($userRole) {
-                $user->roles()->attach($userRole);
-            }
-            
+        if ($userRole) {
+            $user->roles()->attach($userRole);
+        }
+
+        // Clear the cache after creating a new user
+        Cache::store('redis')->forget('users_all');
+
         // Return response JSON user is created
         if ($user) {
             return $this->responseJson(201, 'User created successfully', $user);
