@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('expenses', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('user_id')->index();;
             $table->unsignedBigInteger('sub_category_id');
             $table->unsignedBigInteger('payment_method');
             $table->string('payment_method_name');
@@ -21,7 +21,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->date('date');
             $table->timestamps();
-            $table->softDeletes();
+            $table->softDeletes()->index();;
         });
     }
 

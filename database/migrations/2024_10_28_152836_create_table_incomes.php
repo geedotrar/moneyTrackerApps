@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('incomes', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('user_id')->index();
             $table->decimal('amount', 15, 2);
             $table->string('source');
             $table->text('description')->nullable();
@@ -21,7 +21,7 @@ return new class extends Migration
             $table->unsignedBigInteger('payment_method');
             $table->string('payment_method_name');
             $table->timestamps();
-            $table->softDeletes();
+            $table->softDeletes()->index();
         });
     }
 
