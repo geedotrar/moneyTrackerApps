@@ -12,8 +12,6 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Support\Facades\Cache;
 
-
-
 class AuthController extends Controller
 {
     /**
