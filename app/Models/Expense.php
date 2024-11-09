@@ -11,8 +11,7 @@ class Expense extends Model
     protected $fillable = [
         'user_id',
         'sub_category_id',
-        'payment_method',
-        'payment_method_name',
+        'payment_method_id',
         'amount',
         'description',
         'date',
