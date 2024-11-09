@@ -18,9 +18,9 @@ class PaymentMethodController extends Controller
             if(!auth()->check()){
                 return $this->responseJson(401, 'Unauthorized');
             }
-            $paymentMethod = PaymentMethod::all();
+            $paymentMethod = PaymentMethod::get();
 
-            if(empty($paymentMethod)){
+            if($paymentMethod->isEmpty()) {
                 return $this->responseJson(404,'Payment Method Not Found');
             }
 
@@ -48,6 +48,7 @@ class PaymentMethodController extends Controller
             return $this->responseJson(500,'An Error Occured', $e->getMessage());
         }
     }
+    
     public function store(Request $request): JsonResponse
     {
         try {
