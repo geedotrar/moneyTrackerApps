@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Income;
+use App\Models\PaymentMethod;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -101,6 +102,12 @@ class IncomeController extends Controller
                 'payment_method_id' => $validatedData['payment_method_id'],
             ]);
 
+            $paymentMethod = PaymentMethod::find($validatedData['payment_method_id']);
+
+            if(!$paymentMethod){
+                return $this->responseJson(404, 'Payment Method Not Found');
+            }
+
             $income->load('user','paymentMethod');
 
             $responseData = [
@@ -132,7 +139,7 @@ class IncomeController extends Controller
                 'amount'=> 'required', 
                 'source'=> 'required', 
                 'description'=> 'required',  
-                'payment_method_id'=> 'required', 
+                'payment_method_id'=> 'nullable|exists:payment_methods,id',
             ]);
 
             $validatedData['date'] = Carbon::now();
@@ -142,12 +149,16 @@ class IncomeController extends Controller
                 return $this->responseJson(404, 'Income Not Found');
             }
 
+            if (array_key_exists('payment_method_id', $validatedData) && $validatedData['payment_method_id'] === null) {
+                return $this->responseJson(400, 'Payment Method ID cannot be null');
+            }
+
             $income->update([    
                 'amount' => $validatedData['amount'],
                 'source' => $validatedData['source'],
                 'description' => $validatedData['description'],
                 'date' => $validatedData['date'],
-                'payment_method_id' => $validatedData['payment_method_id'],
+                'payment_method_id' => $validatedData['payment_method_id'] ?? $income->payment_method_id, 
             ]);          
             
             $responseData = [
