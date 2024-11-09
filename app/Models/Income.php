@@ -14,7 +14,17 @@ class Income extends Model
         'source',
         'description',
         'date',
-        'payment_method',
+        'payment_method_id',
         'payment_method_name',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function paymentMethod()
+    {
+        return $this->belongsTo(PaymentMethod::class, 'payment_method_id');
+    }
 }
