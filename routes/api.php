@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\PaymentMethodController;
+use App\Http\Controllers\SubCategoryController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\AdminMiddleware;
 
@@ -41,6 +42,14 @@ Route::middleware(['auth:api', AdminMiddleware::class])->group(function () {
     });
 
     Route::prefix('categories')->controller(CategoryController::class)->group(function () {
+        Route::get('/', 'index');
+        Route::get('/{id}', 'show');
+        Route::post('/create', 'store');
+        Route::put('/update/{id}', 'update');
+        Route::delete('/delete/{id}', 'destroy');
+    });
+
+    Route::prefix('sub-categories')->controller(SubCategoryController::class)->group(function () {
         Route::get('/', 'index');
         Route::get('/{id}', 'show');
         Route::post('/create', 'store');
