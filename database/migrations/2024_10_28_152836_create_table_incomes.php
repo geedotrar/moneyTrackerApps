@@ -18,8 +18,7 @@ return new class extends Migration
             $table->string('source');
             $table->text('description')->nullable();
             $table->date('date');
-            $table->unsignedBigInteger('payment_method');
-            $table->string('payment_method_name');
+            $table->unsignedBigInteger('payment_method_id');
             $table->timestamps();
             $table->softDeletes()->index();
         });
