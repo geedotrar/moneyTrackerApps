@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\SubCategory;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -59,6 +60,13 @@ class SubCategoryController extends Controller
                 'name' => 'required',
                 'description' => 'required'
             ]);
+
+            $paymentMethod = Category::find($validatedData['category_id']);
+
+            if(!$paymentMethod){
+                return $this->responseJson(404, 'Category Not Found');
+            }
+
 
             if (SubCategory::where('name', $validatedData['name'])->exists()) {
                 return $this->responseJson(409, 'Sub Category already exists');
