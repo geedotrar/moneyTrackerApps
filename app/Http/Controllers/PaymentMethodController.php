@@ -24,7 +24,17 @@ class PaymentMethodController extends Controller
                 return $this->responseJson(404,'Payment Method Not Found');
             }
 
-            return $this->responseJson(200,'Get Payment Methods Succesfully',$paymentMethod);
+            $responseData = $paymentMethod->map(function ($income) {
+                return [
+                    'id' => $income->id,
+                    'name' => $income->name,
+                    'amount' => $income->formatted_balance,
+                    'created_at' => $income->created_at,
+                    'updated_at' => $income->updated_at,
+                ];
+            });
+
+            return $this->responseJson(200,'Get Payment Methods Succesfully',$responseData);
         }catch(Exception $e){
             return $this->responseJson(500,'An Error Occured', $e->getMessage());
         }

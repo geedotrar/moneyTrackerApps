@@ -10,5 +10,12 @@ class PaymentMethod extends Model
     use SoftDeletes;
     protected $fillable = [
         'name',
+        'balance'
     ];
+
+    public function getFormattedBalanceAttribute()
+    {
+        return number_format($this->balance, 0, ',', '.');
+    }
+
 }

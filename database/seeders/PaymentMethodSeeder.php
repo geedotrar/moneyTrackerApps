@@ -16,9 +16,11 @@ class PaymentMethodSeeder extends Seeder
         $payemtnMethods = [
             [
                 'name' => 'BCA',
+                'balance' => 1000000,
             ],
             [
                 'name' => 'BNI',
+                'balance' => 2000000
             ],
         ];
 
