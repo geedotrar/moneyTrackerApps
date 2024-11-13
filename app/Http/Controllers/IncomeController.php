@@ -105,7 +105,7 @@ class IncomeController extends Controller
             $financialAccount = FinancialAccount::find($validatedData['financial_account_id']);
 
             if(!$financialAccount){
-                return $this->responseJson(404, 'Payment Method Not Found');
+                return $this->responseJson(404, 'Financial Account Not Found');
             }
 
             $income->load('user','financialAccount');
@@ -150,7 +150,7 @@ class IncomeController extends Controller
             }
 
             if (array_key_exists('financial_account_id', $validatedData) && $validatedData['financial_account_id'] === null) {
-                return $this->responseJson(400, 'Payment Method ID cannot be null');
+                return $this->responseJson(400, 'Financial Account ID cannot be null');
             }
 
             $income->update([    

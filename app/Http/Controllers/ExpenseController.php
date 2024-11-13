@@ -79,19 +79,20 @@ class ExpenseController extends Controller
             $validatedData['user_id'] = auth()->id();
             $validatedData['date'] = Carbon::now();
             
-            $expense = Expense::create([
-                'user_id' => $validatedData['user_id'],
-                'sub_category_id' => $validatedData['sub_category_id'],
-                'financial_account_id'=>$validatedData['financial_account_id'],
-                'amount' => $validatedData['amount'],
-                'description'=> $validatedData['description'],
-                'date'=> $validatedData['date'],
-            ]);
+            $expense = Expense::create($validatedData);
 
             $financialAccount = FinancialAccount::find($validatedData['financial_account_id']);
             if(!$financialAccount){
-                return $this->responseJson(404, 'Payment Method Not Found');
+                return $this->responseJson(404, 'Financial Account Not Found');
             }
+
+            if ($financialAccount->balance < $validatedData['amount']) {
+                return $this->responseJson(400, 'Insufficient funds in financial account');
+            }
+
+            $financialAccount->balance -= $validatedData['amount'];
+            $financialAccount->save();
+
             $subCategory = SubCategory::find($validatedData['sub_category_id']);
 
             if(!$subCategory){
@@ -140,7 +141,7 @@ class ExpenseController extends Controller
             }
 
             if (array_key_exists('financial_account_id', $validatedData) && $validatedData['financial_account_id'] === null) {
-                return $this->responseJson(400, 'Payment Method ID cannot be null');
+                return $this->responseJson(400, 'Financial Account ID cannot be null');
             }
             if (array_key_exists('sub_category_id', $validatedData) && $validatedData['sub_category_id'] === null) {
                 return $this->responseJson(400, 'Sub Category  ID cannot be null');

@@ -21,7 +21,7 @@ class FinancialAccountController extends Controller
             $financialAccount = FinancialAccount::get();
 
             if($financialAccount->isEmpty()) {
-                return $this->responseJson(404,'Payment Method Not Found');
+                return $this->responseJson(404,'Financial Account Not Found');
             }
 
             $responseData = $financialAccount->map(function ($income) {
@@ -50,10 +50,10 @@ class FinancialAccountController extends Controller
             $financialAccount = FinancialAccount::find($id);
 
             if(empty($financialAccount)){
-                return $this->responseJson(404,'Payment Method Not Found');
+                return $this->responseJson(404,'Financial Account Not Found');
             }
 
-            return $this->responseJson(200,"Get Payment Method Succesfully",$financialAccount);
+            return $this->responseJson(200,"Get Financial Account Succesfully",$financialAccount);
         }catch(Exception $e){
             return $this->responseJson(500,'An Error Occured', $e->getMessage());
         }
@@ -78,7 +78,7 @@ class FinancialAccountController extends Controller
                 'name' => $validatedData['name'],
             ]);
 
-            return $this->responseJson(201, 'Payment Method Created Successfully', $financialAccount);
+            return $this->responseJson(201, 'Financial Account Created Successfully', $financialAccount);
         } catch (Exception $e) {
             return $this->responseJson(500, 'An Error Occured', $e->getMessage());
         }
@@ -98,18 +98,18 @@ class FinancialAccountController extends Controller
             $financialAccount = FinancialAccount::find($id);
             
             if(empty($financialAccount)){
-                return $this->responseJson(404,'Payment Method Not Found');
+                return $this->responseJson(404,'Financial Account Not Found');
             }            
 
             if (FinancialAccount::where('name', $validatedData['name'])->where('id', '!=', $id)->exists()) {
-                return $this->responseJson(409, 'Payment Method Already Exists');
+                return $this->responseJson(409, 'Financial Account Already Exists');
             }
 
             $financialAccount->update([    
                 'name' => $validatedData['name'],
             ]);            
 
-            return $this->responseJson(201,"Payment Method Updated Successfully",$financialAccount);
+            return $this->responseJson(201,"Financial Account Updated Successfully",$financialAccount);
         }catch(Exception $e){
             return $this->responseJson(500,'An Error Occured', $e->getMessage());
         }
@@ -126,9 +126,9 @@ class FinancialAccountController extends Controller
 
            $financialAccount->delete();
 
-            return $this->responseJson(200, 'Payment Method deleted successfully', $financialAccount);
+            return $this->responseJson(200, 'Financial Account deleted successfully', $financialAccount);
         } catch (ModelNotFoundException $e) {
-            return $this->responseJson(404, 'Payment Method Not Found');
+            return $this->responseJson(404, 'Financial Account Not Found');
         } catch (Exception $e) {
             return $this->responseJson(500, 'An error occurred', $e->getMessage());
         } 
