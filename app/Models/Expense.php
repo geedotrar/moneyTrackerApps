@@ -12,7 +12,7 @@ class Expense extends Model
     protected $fillable = [
         'user_id',
         'sub_category_id',
-        'payment_method_id',
+        'financial_account_id',
         'amount',
         'description',
         'date',
@@ -23,9 +23,9 @@ class Expense extends Model
         return $this->belongsTo(User::class,'user_id');
     }
 
-    public function paymentMethod():BelongsTo
+    public function financialAccount():BelongsTo
     {
-        return $this->belongsTo(PaymentMethod::class,'payment_method_id');
+        return $this->belongsTo(FinancialAccount::class,'financial_account_id');
     }
 
     public function subCategory():BelongsTo

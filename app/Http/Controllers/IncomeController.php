@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Income;
-use App\Models\PaymentMethod;
+use App\Models\FinancialAccount;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -18,7 +18,7 @@ class IncomeController extends Controller
             if(!auth()->check()){
                 return $this->responseJson(401,'Unauthorized');
             }
-            $incomes = Income::with('user','paymentMethod')->get();
+            $incomes = Income::with('user','financialAccount')->get();
 
             if($incomes->isEmpty()){
                 return $this->responseJson(404,'Incomes Not Found');
@@ -32,7 +32,7 @@ class IncomeController extends Controller
                     'source' => $income->source,
                     'description' => $income->description,
                     'date' => $income->date,
-                    'payment_method' => $income->paymentMethod,
+                    'financial_account' => $income->financialAccount,
                     'created_at' => $income->created_at,
                     'updated_at' => $income->updated_at,
                 ];
@@ -56,7 +56,7 @@ class IncomeController extends Controller
                 return $this->responseJson(404, 'Income Not Found');
             }
             
-            $incomes->load('user','paymentMethod');
+            $incomes->load('user','financialAccount');
 
             $responseData = [
                 'id' => $incomes->id,
@@ -65,7 +65,7 @@ class IncomeController extends Controller
                 'source' => $incomes->source,
                 'description' => $incomes->description,
                 'date' => $incomes->date,
-                'payment_method' => $incomes->paymentMethod, 
+                'financial_account' => $incomes->financialAccount, 
                 'created_at' => $incomes->created_at,
                 'updated_at' => $incomes->updated_at,
             ];
@@ -87,7 +87,7 @@ class IncomeController extends Controller
                 'amount'=> 'required', 
                 'source'=> 'required', 
                 'description'=> 'required',  
-                'payment_method_id'=> 'required', 
+                'financial_account_id'=> 'required', 
             ]);
 
             $validatedData['user_id'] = auth()->id();
@@ -99,16 +99,16 @@ class IncomeController extends Controller
                 'source' => $validatedData['source'],
                 'description' => $validatedData['description'],
                 'date' => $validatedData['date'],
-                'payment_method_id' => $validatedData['payment_method_id'],
+                'financial_account_id' => $validatedData['financial_account_id'],
             ]);
 
-            $paymentMethod = PaymentMethod::find($validatedData['payment_method_id']);
+            $financialAccount = FinancialAccount::find($validatedData['financial_account_id']);
 
-            if(!$paymentMethod){
+            if(!$financialAccount){
                 return $this->responseJson(404, 'Payment Method Not Found');
             }
 
-            $income->load('user','paymentMethod');
+            $income->load('user','financialAccount');
 
             $responseData = [
                 'id' => $income->id,
@@ -117,7 +117,7 @@ class IncomeController extends Controller
                 'source' => $income->source,
                 'description' => $income->description,
                 'date' => $income->date,
-                'payment_method' => $income->paymentMethod, 
+                'financial_account' => $income->financialAccount, 
                 'created_at' => $income->created_at,
                 'updated_at' => $income->updated_at,
             ];
@@ -139,7 +139,7 @@ class IncomeController extends Controller
                 'amount'=> 'required', 
                 'source'=> 'required', 
                 'description'=> 'required',  
-                'payment_method_id'=> 'nullable|exists:payment_methods,id',
+                'financial_account_id'=> 'nullable|exists:financial_accounts,id',
             ]);
 
             $validatedData['date'] = Carbon::now();
@@ -149,7 +149,7 @@ class IncomeController extends Controller
                 return $this->responseJson(404, 'Income Not Found');
             }
 
-            if (array_key_exists('payment_method_id', $validatedData) && $validatedData['payment_method_id'] === null) {
+            if (array_key_exists('financial_account_id', $validatedData) && $validatedData['financial_account_id'] === null) {
                 return $this->responseJson(400, 'Payment Method ID cannot be null');
             }
 
@@ -158,7 +158,7 @@ class IncomeController extends Controller
                 'source' => $validatedData['source'],
                 'description' => $validatedData['description'],
                 'date' => $validatedData['date'],
-                'payment_method_id' => $validatedData['payment_method_id'] ?? $income->payment_method_id, 
+                'financial_account_id' => $validatedData['financial_account_id'] ?? $income->financial_account_id, 
             ]);          
             
             $responseData = [
@@ -168,7 +168,7 @@ class IncomeController extends Controller
                 'source' => $income->source,
                 'description' => $income->description,
                 'date' => $income->date,
-                'payment_method' => $income->paymentMethod, 
+                'financial_account' => $income->financialAccount, 
                 'created_at' => $income->created_at,
                 'updated_at' => $income->updated_at,
             ];
@@ -196,7 +196,7 @@ class IncomeController extends Controller
                 'source' => $income->source,
                 'description' => $income->description,
                 'date' => $income->date,
-                'payment_method' => $income->paymentMethod, 
+                'financial_account' => $income->financialAccount, 
                 'created_at' => $income->created_at,
                 'updated_at' => $income->updated_at,
             ];

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('payment_methods', function (Blueprint $table) {
+        Schema::create('financial_accounts', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
             $table->decimal('balance', 15, 2)->default(0); 
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('payment_methods');
+        Schema::dropIfExists('financial_accounts');
     }
 };

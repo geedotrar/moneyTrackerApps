@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Expense;
-use App\Models\PaymentMethod;
+use App\Models\FinancialAccount;
 use App\Models\SubCategory;
 use Carbon\Carbon;
 use Exception;
@@ -19,7 +19,7 @@ class ExpenseController extends Controller
             if(!auth()->check()){
                 return $this->responseJson(401,'Unauthorized');
             }
-            $expenses = Expense::with('user','paymentMethod','subCategory')->get();
+            $expenses = Expense::with('user','financialAccount','subCategory')->get();
 
             if($expenses->isEmpty()){
                 return $this->responseJson(404,'Expenses Not Found');
@@ -30,7 +30,7 @@ class ExpenseController extends Controller
                     'id' => $expense->id,
                     'user' => $expense ->user, 
                     'sub_category' => $expense ->subCategory,
-                    'payment_method' => $expense ->paymentMethod, 
+                    'financial_account' => $expense ->financialAccount, 
                     'amount' => $expense ->amount,
                     'description' => $expense ->description,
                     'date' => $expense ->date,
@@ -70,7 +70,7 @@ class ExpenseController extends Controller
                 return $this->responseJson(401,'Unauthorized');
             }
             $validatedData = $request->validate([
-                'payment_method_id'=>'required',
+                'financial_account_id'=>'required',
                 'amount'=>'required',
                 'description'=>'required',
                 'sub_category_id' => 'required'
@@ -82,14 +82,14 @@ class ExpenseController extends Controller
             $expense = Expense::create([
                 'user_id' => $validatedData['user_id'],
                 'sub_category_id' => $validatedData['sub_category_id'],
-                'payment_method_id'=>$validatedData['payment_method_id'],
+                'financial_account_id'=>$validatedData['financial_account_id'],
                 'amount' => $validatedData['amount'],
                 'description'=> $validatedData['description'],
                 'date'=> $validatedData['date'],
             ]);
 
-            $paymentMethod = PaymentMethod::find($validatedData['payment_method_id']);
-            if(!$paymentMethod){
+            $financialAccount = FinancialAccount::find($validatedData['financial_account_id']);
+            if(!$financialAccount){
                 return $this->responseJson(404, 'Payment Method Not Found');
             }
             $subCategory = SubCategory::find($validatedData['sub_category_id']);
@@ -98,7 +98,7 @@ class ExpenseController extends Controller
                 return $this->responseJson(404,'Sub Category Not Found');
             }
 
-            $expense->load('user','paymentMethod','subCategory');
+            $expense->load('user','financialAccount','subCategory');
 
             $responseData = [
                 'id' => $expense->id,
@@ -106,7 +106,7 @@ class ExpenseController extends Controller
                 'amount' => $expense->amount,
                 'description' => $expense->description,
                 'date' => $expense->date,
-                'payment_method' => $expense->paymentMethod, 
+                'financial_account' => $expense->financialAccount, 
                 'sub_category' => $expense->subCategory, 
                 'created_at' => $expense->created_at,
                 'updated_at' => $expense->updated_at,
@@ -125,7 +125,7 @@ class ExpenseController extends Controller
             }
             
             $validatedData = $request->validate([
-                'payment_method_id'=> 'nullable|exists:payment_methods,id',
+                'financial_account_id'=> 'nullable|exists:financial_accounts,id',
                 'amount'=>'required',
                 'description'=>'required',
                 'sub_category_id'=> 'nullable|exists:sub_categories,id',
@@ -139,7 +139,7 @@ class ExpenseController extends Controller
                 return $this->responseJson(404, 'Expense Not Found');
             }
 
-            if (array_key_exists('payment_method_id', $validatedData) && $validatedData['payment_method_id'] === null) {
+            if (array_key_exists('financial_account_id', $validatedData) && $validatedData['financial_account_id'] === null) {
                 return $this->responseJson(400, 'Payment Method ID cannot be null');
             }
             if (array_key_exists('sub_category_id', $validatedData) && $validatedData['sub_category_id'] === null) {
@@ -149,7 +149,7 @@ class ExpenseController extends Controller
             $expense->update([
                 'user_id' => $validatedData['user_id'],
                 'sub_category_id' => $validatedData['sub_category_id'] ?? $expense->sub_category_id, 
-                'payment_method_id' => $validatedData['payment_method_id'] ?? $expense->payment_method_id, 
+                'financial_account_id' => $validatedData['financial_account_id'] ?? $expense->financial_account_id, 
                 'amount' => $validatedData['amount'],
                 'description'=> $validatedData['description'],
                 'date'=> $validatedData['date'],
@@ -161,7 +161,7 @@ class ExpenseController extends Controller
                 'amount' => $expense->amount,
                 'description' => $expense->description,
                 'date' => $expense->date,
-                'payment_method' => $expense->paymentMethod, 
+                'financial_account' => $expense->financialAccount, 
                 'sub_category' => $expense->subCategory, 
                 'created_at' => $expense->created_at,
                 'updated_at' => $expense->updated_at,
@@ -187,7 +187,7 @@ class ExpenseController extends Controller
                 'id' => $expense->id,
                 'user' => $expense->user, 
                 'sub_category' => $expense->subCategory,
-                'payment_method' => $expense->paymentMethod, 
+                'financial_account' => $expense->financialAccount, 
                 'amount' => $expense->amount,
                 'description' => $expense->description,
                 'date' => $expense->date,

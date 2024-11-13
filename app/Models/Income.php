@@ -14,7 +14,7 @@ class Income extends Model
         'source',
         'description',
         'date',
-        'payment_method_id',
+        'financial_account_id',
         'payment_method_name',
     ];
 
@@ -23,8 +23,8 @@ class Income extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function paymentMethod()
+    public function financialAccount()
     {
-        return $this->belongsTo(PaymentMethod::class, 'payment_method_id');
+        return $this->belongsTo(FinancialAccount::class, 'financial_account_id');
     }
 }

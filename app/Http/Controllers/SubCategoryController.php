@@ -61,9 +61,9 @@ class SubCategoryController extends Controller
                 'description' => 'required'
             ]);
 
-            $paymentMethod = Category::find($validatedData['category_id']);
+            $financialAccount = Category::find($validatedData['category_id']);
 
-            if(!$paymentMethod){
+            if(!$financialAccount){
                 return $this->responseJson(404, 'Category Not Found');
             }
 

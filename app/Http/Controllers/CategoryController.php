@@ -63,12 +63,12 @@ class CategoryController extends Controller
                 return $this->responseJson(409, 'Category already exists');
             }
 
-            $paymentMethod = Category::create([
+            $financialAccount = Category::create([
                 'name' => $validatedData['name'],
                 'description' => $validatedData['description'],
             ]);
 
-            return $this->responseJson(201, 'Category Created Successfully', $paymentMethod);
+            return $this->responseJson(201, 'Category Created Successfully', $financialAccount);
         } catch (Exception $e) {
             return $this->responseJson(500, 'An Error Occured', $e->getMessage());
         }
@@ -86,9 +86,9 @@ class CategoryController extends Controller
                 'description' => 'required'
             ]);
 
-            $paymentMethod = Category::find($id);
+            $financialAccount = Category::find($id);
             
-            if(empty($paymentMethod)){
+            if(empty($financialAccount)){
                 return $this->responseJson(404,'Category Not Found');
             }            
 
@@ -96,12 +96,12 @@ class CategoryController extends Controller
                 return $this->responseJson(409, 'Category Already Exists');
             }
 
-            $paymentMethod->update([    
+            $financialAccount->update([    
                 'name' => $validatedData['name'],
                 'description' => $validatedData['description'],
             ]);            
 
-            return $this->responseJson(201,"Category Updated Successfully",$paymentMethod);
+            return $this->responseJson(201,"Category Updated Successfully",$financialAccount);
         }catch(Exception $e){
             return $this->responseJson(500,'An Error Occured', $e->getMessage());
         }
@@ -114,11 +114,11 @@ class CategoryController extends Controller
                 return $this->responseJson(401, 'Unauthorized');
             }
 
-            $paymentMethod = Category::findOrFail($id);
+            $financialAccount = Category::findOrFail($id);
 
-           $paymentMethod->delete();
+           $financialAccount->delete();
 
-            return $this->responseJson(200, 'Category deleted successfully', $paymentMethod);
+            return $this->responseJson(200, 'Category deleted successfully', $financialAccount);
         } catch (ModelNotFoundException $e) {
             return $this->responseJson(404, 'Category Not Found');
         } catch (Exception $e) {

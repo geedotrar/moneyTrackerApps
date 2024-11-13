@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id')->index();;
             $table->unsignedBigInteger('sub_category_id');
-            $table->unsignedBigInteger('payment_method_id');
+            $table->unsignedBigInteger('financial_account_id');
             $table->decimal('amount', 15, 2);
             $table->text('description')->nullable();
             $table->date('date');

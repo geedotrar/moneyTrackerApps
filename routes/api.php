@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\User\UserController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\IncomeController;
-use App\Http\Controllers\PaymentMethodController;
+use App\Http\Controllers\FinancialAccountController;
 use App\Http\Controllers\SubCategoryController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\AdminMiddleware;
@@ -25,7 +25,7 @@ Route::middleware(['auth:api', AdminMiddleware::class])->group(function () {
         Route::delete('/delete/{id}', 'destroy');
     });
     
-    Route::prefix('paymentMethods')->controller(PaymentMethodController::class)->group(function () {
+    Route::prefix('financialAccounts')->controller(FinancialAccountController::class)->group(function () {
         Route::get('/', 'index'); 
         Route::get('/{id}', 'show'); 
         Route::post('/create', 'store'); 

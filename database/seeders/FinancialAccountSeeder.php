@@ -2,18 +2,18 @@
 
 namespace Database\Seeders;
 
-use App\Models\PaymentMethod;
+use App\Models\FinancialAccount;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class PaymentMethodSeeder extends Seeder
+class FinancialAccountSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $payemtnMethods = [
+        $financialAccount = [
             [
                 'name' => 'BCA',
                 'balance' => 1000000,
@@ -24,9 +24,9 @@ class PaymentMethodSeeder extends Seeder
             ],
         ];
 
-        foreach ($payemtnMethods as $paymentMethod) {
-            if (PaymentMethod::where('name', $paymentMethod['name'])->doesntExist()) {
-                PaymentMethod::create($paymentMethod);
+        foreach ($financialAccount as $financialAcc) {
+            if (FinancialAccount::where('name', $financialAcc['name'])->doesntExist()) {
+                FinancialAccount::create($financialAcc);
             }
         }
     }

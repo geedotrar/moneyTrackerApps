@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PaymentMethod;
+use App\Models\FinancialAccount;
 use App\Models\Role;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Database\QueryException; 
 
-class PaymentMethodController extends Controller
+class FinancialAccountController extends Controller
 {
     public function index():JsonResponse
     {
@@ -18,13 +18,13 @@ class PaymentMethodController extends Controller
             if(!auth()->check()){
                 return $this->responseJson(401, 'Unauthorized');
             }
-            $paymentMethod = PaymentMethod::get();
+            $financialAccount = FinancialAccount::get();
 
-            if($paymentMethod->isEmpty()) {
+            if($financialAccount->isEmpty()) {
                 return $this->responseJson(404,'Payment Method Not Found');
             }
 
-            $responseData = $paymentMethod->map(function ($income) {
+            $responseData = $financialAccount->map(function ($income) {
                 return [
                     'id' => $income->id,
                     'name' => $income->name,
@@ -47,13 +47,13 @@ class PaymentMethodController extends Controller
                 return $this->responseJson(401, 'Unauthorized');
             }
             
-            $paymentMethod = PaymentMethod::find($id);
+            $financialAccount = FinancialAccount::find($id);
 
-            if(empty($paymentMethod)){
+            if(empty($financialAccount)){
                 return $this->responseJson(404,'Payment Method Not Found');
             }
 
-            return $this->responseJson(200,"Get Payment Method Succesfully",$paymentMethod);
+            return $this->responseJson(200,"Get Payment Method Succesfully",$financialAccount);
         }catch(Exception $e){
             return $this->responseJson(500,'An Error Occured', $e->getMessage());
         }
@@ -70,15 +70,15 @@ class PaymentMethodController extends Controller
                 'name' => 'required'
             ]);
 
-            if (PaymentMethod::where('name', $validatedData['name'])->exists()) {
+            if (FinancialAccount::where('name', $validatedData['name'])->exists()) {
                 return $this->responseJson(409, 'Payment method already exists');
             }
 
-            $paymentMethod = PaymentMethod::create([
+            $financialAccount = FinancialAccount::create([
                 'name' => $validatedData['name'],
             ]);
 
-            return $this->responseJson(201, 'Payment Method Created Successfully', $paymentMethod);
+            return $this->responseJson(201, 'Payment Method Created Successfully', $financialAccount);
         } catch (Exception $e) {
             return $this->responseJson(500, 'An Error Occured', $e->getMessage());
         }
@@ -95,21 +95,21 @@ class PaymentMethodController extends Controller
                 'name' => 'required'
             ]);
 
-            $paymentMethod = PaymentMethod::find($id);
+            $financialAccount = FinancialAccount::find($id);
             
-            if(empty($paymentMethod)){
+            if(empty($financialAccount)){
                 return $this->responseJson(404,'Payment Method Not Found');
             }            
 
-            if (PaymentMethod::where('name', $validatedData['name'])->where('id', '!=', $id)->exists()) {
+            if (FinancialAccount::where('name', $validatedData['name'])->where('id', '!=', $id)->exists()) {
                 return $this->responseJson(409, 'Payment Method Already Exists');
             }
 
-            $paymentMethod->update([    
+            $financialAccount->update([    
                 'name' => $validatedData['name'],
             ]);            
 
-            return $this->responseJson(201,"Payment Method Updated Successfully",$paymentMethod);
+            return $this->responseJson(201,"Payment Method Updated Successfully",$financialAccount);
         }catch(Exception $e){
             return $this->responseJson(500,'An Error Occured', $e->getMessage());
         }
@@ -122,11 +122,11 @@ class PaymentMethodController extends Controller
                 return $this->responseJson(401, 'Unauthorized');
             }
 
-            $paymentMethod = PaymentMethod::findOrFail($id);
+            $financialAccount = FinancialAccount::findOrFail($id);
 
-           $paymentMethod->delete();
+           $financialAccount->delete();
 
-            return $this->responseJson(200, 'Payment Method deleted successfully', $paymentMethod);
+            return $this->responseJson(200, 'Payment Method deleted successfully', $financialAccount);
         } catch (ModelNotFoundException $e) {
             return $this->responseJson(404, 'Payment Method Not Found');
         } catch (Exception $e) {
