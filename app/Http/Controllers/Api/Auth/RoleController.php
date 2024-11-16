@@ -17,7 +17,7 @@ class RoleController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-     public function assignRole(Request $request, User $user): JsonResponse
+    public function assignRole(Request $request, User $user): JsonResponse
     {
         // Validasi input dari permintaan
         $request->validate([

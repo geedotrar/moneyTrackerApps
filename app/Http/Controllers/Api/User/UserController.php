@@ -55,13 +55,19 @@ class UserController extends Controller
                 return $this->responseJson(401, 'Unauthorized');
             }
 
+            $user = auth()->user();
+
+            if (!$user->hasRole('admin') && $user->id !== (int) $id) {
+                return $this->responseJson(403, 'Forbidden');
+            }
+
             $users = User::find($id);
 
             if (!$users) {
                 return $this->responseJson(404, 'No users found');
             }
 
-            return $this->responseJson(200, 'Users retrieved successfully', $users);
+            return $this->responseJson(200, 'User retrieved successfully', $users);
         } catch (ModelNotFoundException $e) {
             return $this->responseJson(404, 'Resource not found');
         } catch (Exception $e) {

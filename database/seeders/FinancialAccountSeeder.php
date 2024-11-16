@@ -16,11 +16,9 @@ class FinancialAccountSeeder extends Seeder
         $financialAccount = [
             [
                 'name' => 'BCA',
-                'balance' => 1000000,
             ],
             [
                 'name' => 'BNI',
-                'balance' => 2000000
             ],
         ];
 

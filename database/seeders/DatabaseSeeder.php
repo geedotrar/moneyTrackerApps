@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             UsersSeeder::class,
             RoleUserSeeder::class,
             FinancialAccountSeeder::class,
+            BalanceSeeder::class,
             CategorySeeder::class,
             SubCategorySeeder::class
         ]);

@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('financial_accounts', function (Blueprint $table) {
+        Schema::create('balances', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->decimal('balance', 15, 2)->default(0); 
+            $table->unsignedBigInteger('user_id')->index();
+            $table->unsignedBigInteger('financial_account_id')->index();
+            $table->decimal('amount', 15, 2)->default(0); 
             $table->timestamps();
             $table->softDeletes()->index();
         });
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('financial_accounts');
+        Schema::dropIfExists('balances');
     }
 };

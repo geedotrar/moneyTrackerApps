@@ -10,12 +10,14 @@ class FinancialAccount extends Model
     use SoftDeletes;
     protected $fillable = [
         'name',
-        'balance'
     ];
 
-    public function getFormattedBalanceAttribute()
+    /**
+     * Relationship to FinancialAccountBalance.
+     */
+    public function balances()
     {
-        return number_format($this->balance, 0, ',', '.');
+        return $this->hasMany(Balance::class, 'financial_accounts_id');
     }
 
 }
