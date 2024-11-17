@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\AuthController;
-use App\Http\Controllers\Api\Auth\RoleController;
 use App\Http\Controllers\Api\User\UserController;
+use App\Http\Controllers\BalanceController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\IncomeController;
@@ -19,17 +19,22 @@ Route::middleware(['auth:api', AdminMiddleware::class])->group(function () {
 
     Route::prefix('users')->controller(UserController::class)->group(function () {
         Route::get('/', 'index');
-        Route::get('/{id}', 'show');
+        // Route::get('/{id}', 'show');
         Route::post('/create', 'store');
         Route::put('/update/{id}', 'update');
         Route::delete('/delete/{id}', 'destroy');
     });
     
-    Route::prefix('financialAccounts')->controller(FinancialAccountController::class)->group(function () {
+    Route::prefix('financial-accounts')->controller(FinancialAccountController::class)->group(function () {
         Route::get('/', 'index'); 
         Route::get('/{id}', 'show'); 
         Route::post('/create', 'store'); 
         Route::put('/update/{id}', 'update'); 
+        Route::delete('/delete/{id}', 'destroy'); 
+    });
+
+    Route::prefix('balance')->controller(BalanceController::class)->group(function () {
+        Route::get('/', 'index'); 
         Route::delete('/delete/{id}', 'destroy'); 
     });
     
@@ -55,6 +60,20 @@ Route::middleware(['auth:api', AdminMiddleware::class])->group(function () {
         Route::post('/create', 'store');
         Route::put('/update/{id}', 'update');
         Route::delete('/delete/{id}', 'destroy');
+    });
+
+});
+
+Route::middleware(['auth:api'])->group(function () 
+{
+    Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::prefix('users')->controller(UserController::class)->group(function () {
+        Route::get('/{id}', 'show');
+    });
+
+    Route::prefix('balance')->controller(BalanceController::class)->group(function () {
+        Route::get('/{id}', 'show');
     });
 
     Route::prefix('expenses')->controller(ExpenseController::class)->group(function () {
