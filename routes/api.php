@@ -14,6 +14,7 @@ use App\Http\Middleware\AdminMiddleware;
 Route::post('/register', [AuthController::class,'register']);
 Route::post('/login', [AuthController::class,'login']);
 
+//Admin
 Route::middleware(['auth:api', AdminMiddleware::class])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -64,6 +65,7 @@ Route::middleware(['auth:api', AdminMiddleware::class])->group(function () {
 
 });
 
+//Global
 Route::middleware(['auth:api'])->group(function () 
 {
     Route::post('/logout', [AuthController::class, 'logout']);
