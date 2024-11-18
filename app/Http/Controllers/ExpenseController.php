@@ -30,7 +30,6 @@ class ExpenseController extends Controller
 
             $responseData = $expenses->map(function ($expense) use ($balances) {
                 $balance = $balances->get($expense->financial_account_id);
-                $balanceAmount = $balance->amount ?? 0;
     
                 $amountBeforePay = $balance ? $balance->amount + $expense->amount : $expense->amount;
                 $amountAfterPay = $balance ? $balance->amount : 0;
