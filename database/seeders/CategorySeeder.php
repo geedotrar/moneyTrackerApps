@@ -16,11 +16,13 @@ class CategorySeeder extends Seeder
         $catgories = [
             [
                 'name' => 'category-1',
-                'description' => 'desc-1'
+                'description' => 'desc-1',
+                'type' => 'income'
             ],
             [
                 'name' => 'category-2',
                 'description' => 'desc-2',
+                'type' => 'expense'
             ],
         ];
 

@@ -56,6 +56,7 @@ class CategoryController extends Controller
 
             $validatedData = $request->validate([
                 'name' => 'required',
+                'type' => 'required|in:income,expense',
                 'description' => 'required'
             ]);
 
@@ -63,10 +64,7 @@ class CategoryController extends Controller
                 return $this->responseJson(409, 'Category already exists');
             }
 
-            $financialAccount = Category::create([
-                'name' => $validatedData['name'],
-                'description' => $validatedData['description'],
-            ]);
+            $financialAccount = Category::create($validatedData);
 
             return $this->responseJson(201, 'Category Created Successfully', $financialAccount);
         } catch (Exception $e) {
@@ -83,6 +81,7 @@ class CategoryController extends Controller
             
             $validatedData = $request->validate([
                 'name' => 'required',
+                'type' => 'required|in:income,expense',
                 'description' => 'required'
             ]);
 
@@ -96,10 +95,7 @@ class CategoryController extends Controller
                 return $this->responseJson(409, 'Category Already Exists');
             }
 
-            $financialAccount->update([    
-                'name' => $validatedData['name'],
-                'description' => $validatedData['description'],
-            ]);            
+            $financialAccount->update($validatedData);            
 
             return $this->responseJson(201,"Category Updated Successfully",$financialAccount);
         }catch(Exception $e){
