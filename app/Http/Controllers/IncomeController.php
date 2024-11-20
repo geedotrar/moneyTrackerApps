@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Balance;
+use App\Models\Category;
 use App\Models\Income;
 use App\Models\FinancialAccount;
 use App\Models\SubCategory;
@@ -20,13 +21,24 @@ class IncomeController extends Controller
             if(!auth()->check()){
                 return $this->responseJson(401,'Unauthorized');
             }
-            $incomes = Income::with('user','financialAccount')->get();
+            $incomes = Income::with('user','financialAccount','subCategory.category')->get();
 
             if($incomes->isEmpty()){
                 return $this->responseJson(404,'Incomes Not Found');
             }
 
             $responseData = $incomes->map(function ($income) {
+                $financialAccount = $income->financialAccount;
+                $subCategory = $income->subCategory;
+                $category = $subCategory ? $subCategory->category : null;
+
+                $balance = Balance::where('user_id', $income->user_id)
+                    ->where('financial_account_id', $financialAccount->id)
+                    ->first();
+
+                $amountBeforeAdding = $balance ? $balance->amount : 0;
+                $amountAfterPay = $balance ? $balance->amount + $income->amount : 0;
+
                 return [
                     'id' => $income->id,
                     'user' => $income->user,
@@ -34,7 +46,30 @@ class IncomeController extends Controller
                     'source' => $income->source,
                     'description' => $income->description,
                     'date' => $income->date,
-                    'financial_account' => $income->financialAccount,
+                    'financial_account' => [
+                        'id' => $financialAccount->id,
+                        'name' => $financialAccount->name,
+                        'balance_before_adding' => number_format($amountBeforeAdding, 2, ',', '.'),
+                        'balance_after_adding' => number_format($amountAfterPay, 2, ',', '.'),
+                        'created_at' => $financialAccount->created_at,
+                        'updated_at' => $financialAccount->updated_at,
+                    ],
+                    'category' => $category ? [
+                        'id' => $category->id,
+                        'name' => $category->name,
+                        'type' => $category->type,
+                        'description' => $category->description,
+                        'created_at' => $category->created_at,
+                        'updated_at' => $category->updated_at,
+                        'sub_category' => $subCategory ? [
+                            'id' => $subCategory->id,
+                            'name' => $subCategory->name,
+                            'description' => $subCategory->description,
+                            'created_at' => $subCategory->created_at,
+                            'updated_at' => $subCategory->updated_at,
+                            'deleted_at' => $subCategory->deleted_at,
+                        ] : null,
+                    ] : null,
                     'created_at' => $income->created_at,
                     'updated_at' => $income->updated_at,
                 ];
@@ -42,7 +77,7 @@ class IncomeController extends Controller
 
             return $this->responseJson(200,'Get Incomes Successfully',$responseData);
         }catch(Exception $e){
-            return $this->responseJson(500,'An Error Occured', $e->getMessage());
+            return $this->responseJson(500,'An Error Occurred', $e->getMessage());
         }
     }
     
@@ -90,8 +125,11 @@ class IncomeController extends Controller
             $validatedData = $request->validate([
                 'amount'=> 'required', 
                 'source'=> 'required', 
-                'description'=> 'required',  
-                'financial_account_id'=> 'required', 
+                'description'=> 'nullable',  
+                'financial_account_id'=> 'required',
+                'sub_category_id' => 'nullable', 
+                'new_category' => 'nullable', 
+                'new_sub_category' => 'nullable', 
             ]);
 
             if ($user->hasRole('admin')) {
@@ -102,6 +140,29 @@ class IncomeController extends Controller
             }
             
             $validatedData['date'] = Carbon::now();
+
+            if ($request->filled('new_sub_category')) {
+                if ($request->filled('new_category')) {
+                    $category = Category::create([
+                        'name' => $request->input('new_category'),
+                        'type' => 'income',
+                    ]);
+                } else {
+                    $subCategory = SubCategory::find($validatedData['sub_category_id']);
+                    $category = $subCategory->category;
+                }
+
+                $subCategory = SubCategory::create([
+                    'category_id' => $category->id,
+                    'name' => $validatedData['new_sub_category'],
+                    'description' => $request->input('sub_category_description', ''),
+                ]);
+                $validatedData['sub_category_id'] = $subCategory->id;
+            }
+
+            if (!$request->filled('new_sub_category') && !$validatedData['sub_category_id']) {
+                return $this->responseJson(400, 'Sub Category is required');
+            }
 
             $income = Income::create($validatedData);
 
@@ -123,15 +184,18 @@ class IncomeController extends Controller
             }
 
             $amountBeforeAdding = $balance->amount;
-            $amountAfterPay = $balance->amount - $validatedData['amount'];
+            $amountAfterPay = $balance->amount + $validatedData['amount'];
     
             $balance->amount = $amountAfterPay;
             $balance->save();
 
-            $subCategory = SubCategory::find($validatedData['sub_category_id']);
+            $subCategory = SubCategory::with('category')->find($validatedData['sub_category_id']);
+            if (!$subCategory) {
+                return $this->responseJson(404, 'Sub Category Not Found');
+            }
 
-            if(!$subCategory){
-                return $this->responseJson(404,'Sub Category Not Found');
+            if(!$subCategory->category || $subCategory->category->type !== 'income') {
+                return $this->responseJson(400, 'The selected subcategory must belong to a category of type income.');
             }
 
             $income->load('user','financialAccount');
@@ -155,14 +219,22 @@ class IncomeController extends Controller
                     'description' => $income->description,
                     'date' => $income->date,
                 ],
-                "sub_category" => [
-                    "id" => $subCategory->id,
-                    "category_id" => $subCategory->category_id,
-                    "name" => $subCategory->name,
-                    "description" => $subCategory->description,
-                    "created_at" => $subCategory->created_at,
-                    "updated_at" => $subCategory->updated_at,
-                    "deleted_at" => $subCategory->deleted_at,
+                "category" => [
+                    "id" => $subCategory->category->id,
+                    "name" => $subCategory->category->name,
+                    "type" => $subCategory->category->type,
+                    "description" => $subCategory->category->description,
+                    "created_at" => $subCategory->category->created_at,
+                    "updated_at" => $subCategory->category->updated_at,
+                    "sub_category" => [
+                        "id" => $subCategory->id,
+                        "category_id" => $subCategory->category_id,
+                        "name" => $subCategory->name,
+                        "description" => $subCategory->description,
+                        "created_at" => $subCategory->created_at,
+                        "updated_at" => $subCategory->updated_at,
+                        "deleted_at" => $subCategory->deleted_at,
+                    ],
                 ],
                 "created_at" => $income->created_at,
                 "updated_at" => $income->updated_at,
@@ -174,67 +246,142 @@ class IncomeController extends Controller
     }
 
 
-            // $responseData = [
-            //     'id' => $income->id,
-            //     'user' => $income->user, 
-            //     'amount' => $income->amount,
-            //     'source' => $income->source,
-            //     'description' => $income->description,
-            //     'date' => $income->date,
-            //     'financial_account' => $income->financialAccount, 
-            //     'created_at' => $income->created_at,
-            //     'updated_at' => $income->updated_at,
-            // ];
-    
-        
-
-    public function update(Request $request, $id):JsonResponse
+    public function update(Request $request, $id): JsonResponse
     {
         try{
-            if(!auth()->check()){
+            if(!auth()->check()) {
                 return $this->responseJson(401, 'Unauthorized');
             }
-            
+
+            $user = auth()->user();
+
             $validatedData = $request->validate([
                 'amount'=> 'required', 
                 'source'=> 'required', 
-                'description'=> 'required',  
-                'financial_account_id'=> 'nullable|exists:financial_accounts,id',
+                'description'=> 'nullable',  
+                'financial_account_id' => 'required',
+                'sub_category_id' => 'nullable', 
+                'new_category' => 'nullable', 
+                'new_sub_category' => 'nullable', 
             ]);
 
+            if ($user->hasRole('admin')) {
+                $request->validate(['user_id' => 'required']);
+                $validatedData['user_id'] = $request->input('user_id');
+            } else {
+                $validatedData['user_id'] = auth()->id();
+            }
+
             $validatedData['date'] = Carbon::now();
+
+            if ($request->filled('new_sub_category')) {
+                if ($request->filled('new_category')) {
+                    $category = Category::create([
+                        'name' => $request->input('new_category'),
+                        'type' => 'income',
+                    ]);
+                } else {
+                    $subCategory = SubCategory::find($validatedData['sub_category_id']);
+                    $category = $subCategory->category;
+                }
+
+                $subCategory = SubCategory::create([
+                    'category_id' => $category->id,
+                    'name' => $validatedData['new_sub_category'],
+                    'description' => $request->input('sub_category_description', ''),
+                ]);
+                $validatedData['sub_category_id'] = $subCategory->id;
+            }
+
+            if (!$request->filled('new_sub_category') && !$validatedData['sub_category_id']) {
+                return $this->responseJson(400, 'Sub Category is required');
+            }
+
             $income = Income::find($id);
 
             if (empty($income)) {  
                 return $this->responseJson(404, 'Income Not Found');
             }
 
-            if (array_key_exists('financial_account_id', $validatedData) && $validatedData['financial_account_id'] === null) {
-                return $this->responseJson(400, 'Financial Account ID cannot be null');
+            $income->update($validatedData);
+
+            $financialAccount = FinancialAccount::find($validatedData['financial_account_id']);
+
+            if (!$financialAccount) {
+                return $this->responseJson(404, 'Financial Account Not Found');
             }
 
-            $income->update([    
-                'amount' => $validatedData['amount'],
-                'source' => $validatedData['source'],
-                'description' => $validatedData['description'],
-                'date' => $validatedData['date'],
-                'financial_account_id' => $validatedData['financial_account_id'] ?? $income->financial_account_id, 
-            ]);          
-            
+            $balance = Balance::where('user_id', $validatedData['user_id'])
+                ->where('financial_account_id', $validatedData['financial_account_id'])
+                ->first();
+
+            if (!$balance) {
+                return $this->responseJson(404, 'Balance Not Found');
+            }
+
+            if ($balance->amount < $validatedData['amount']) {
+                return $this->responseJson(400, 'Insufficient funds in balance');
+            }
+
+            $amountBeforeAdding = $balance->amount;
+            $amountAfterPay = $balance->amount + $validatedData['amount'];
+
+            $balance->amount = $amountAfterPay;
+            $balance->save();
+
+            $subCategory = SubCategory::with('category')->find($validatedData['sub_category_id']);
+            if (!$subCategory) {
+                return $this->responseJson(404, 'Sub Category Not Found');
+            }
+
+            if (!$subCategory->category || $subCategory->category->type !== 'income') {
+                return $this->responseJson(400, 'The selected subcategory must belong to a category of type income.');
+            }
+
+            $income->load('user', 'financialAccount');
+
             $responseData = [
-                'id' => $income->id,
-                'user' => $income->user, 
-                'amount' => $income->amount,
-                'source' => $income->source,
-                'description' => $income->description,
-                'date' => $income->date,
-                'financial_account' => $income->financialAccount, 
-                'created_at' => $income->created_at,
-                'updated_at' => $income->updated_at,
+                "id" => $income->id,
+                "user" => $income->user,
+                "financial_accounts" => [
+                    $financialAccount->name => [
+                        "id" => $financialAccount->id,
+                        "name" => $financialAccount->name,
+                        "balance_before_adding" => number_format($amountBeforeAdding, 2, ',', '.'),
+                        "balance_after_adding" => number_format($amountAfterPay, 2, ',', '.'),
+                        "created_at" => $financialAccount->created_at,
+                        "updated_at" => $financialAccount->updated_at,
+                    ]
+                ],
+                "income" => [
+                    'amount' => $income->amount,
+                    'source' => $income->source,
+                    'description' => $income->description,
+                    'date' => $income->date,
+                ],
+                "category" => [
+                    "id" => $subCategory->category->id,
+                    "name" => $subCategory->category->name,
+                    "type" => $subCategory->category->type,
+                    "description" => $subCategory->category->description,
+                    "created_at" => $subCategory->category->created_at,
+                    "updated_at" => $subCategory->category->updated_at,
+                    "sub_category" => [
+                        "id" => $subCategory->id,
+                        "category_id" => $subCategory->category_id,
+                        "name" => $subCategory->name,
+                        "description" => $subCategory->description,
+                        "created_at" => $subCategory->created_at,
+                        "updated_at" => $subCategory->updated_at,
+                        "deleted_at" => $subCategory->deleted_at,
+                    ],
+                ],
+                "created_at" => $income->created_at,
+                "updated_at" => $income->updated_at,
             ];
-            return $this->responseJson(201,"Income Updated Successfully",$responseData);
+            return $this->responseJson(201,'Income Updated Successfully',$responseData);
         }catch(Exception $e){
-            return $this->responseJson(500,'An Error Occured', $e->getMessage());
+            return $this->responseJson(500,'An Error Occurred', $e->getMessage());
         }
     }
 
