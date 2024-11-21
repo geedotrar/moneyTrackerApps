@@ -16,8 +16,8 @@ class UserController extends Controller
     public function index(): JsonResponse
     {
         try {
-            if (!auth()->check()) {
-                return $this->responseJson(401, 'Unauthorized');
+            if (!auth()->user()->hasPermission('admin-view-users')) {
+                return $this->responseJson(403, 'No Access');
             }
 
             $cacheKey = 'users_all';
