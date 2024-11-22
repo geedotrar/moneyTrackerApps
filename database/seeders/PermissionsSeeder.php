@@ -19,6 +19,7 @@ class PermissionsSeeder extends Seeder
 
         $userPermissions = [
             ['name' => 'user-view-users'],
+            ['name' => 'user-edit-users'],
         ];
 
         // Seed admin permissions

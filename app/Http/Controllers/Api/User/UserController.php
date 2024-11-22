@@ -10,15 +10,16 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class UserController extends Controller
 {
+    use AuthorizesRequests;
     public function index(): JsonResponse
     {
         try {
-            if (!auth()->user()->hasPermission('admin-view-users')) {
-                return $this->responseJson(403, 'No Access');
-            }
+            $this->authorize('viewAny', User::class);
 
             $cacheKey = 'users_all';
 
@@ -29,7 +30,7 @@ class UserController extends Controller
                 // If not found in cache, retrieve from database
                 $users = User::all();
 
-                // Store the retrieved users in Redis cache for 1 hour
+                // Store the retrieved users in Redis cache for 1 day
                 Cache::store('redis')->put($cacheKey, $users, 60 * 60 * 24);
             } else {
                 // If users were found in cache, decode them (if needed)
@@ -41,6 +42,8 @@ class UserController extends Controller
             }
 
             return $this->responseJson(200, 'Users retrieved successfully', $users);
+        } catch (AuthorizationException $e) {
+            return $this->responseJson(403, 'No Access');
         } catch (ModelNotFoundException $e) {
             return $this->responseJson(404, 'Resource not found');
         } catch (Exception $e) {
@@ -51,23 +54,17 @@ class UserController extends Controller
     public function show($id): JsonResponse
     {
         try {
-            if (!auth()->check()) {
-                return $this->responseJson(401, 'Unauthorized');
-            }
+            $user = User::find($id);
 
-            $user = auth()->user();
-
-            if (!$user->hasRole('admin') && $user->id !== (int) $id) {
-                return $this->responseJson(403, 'Forbidden');
-            }
-
-            $users = User::find($id);
-
-            if (!$users) {
+            if (!$user) {
                 return $this->responseJson(404, 'No users found');
             }
 
-            return $this->responseJson(200, 'User retrieved successfully', $users);
+            $this->authorize('view', $user);
+
+            return $this->responseJson(200, 'User retrieved successfully', $user);
+        } catch (AuthorizationException $e) {
+            return $this->responseJson(403, 'No Access');
         } catch (ModelNotFoundException $e) {
             return $this->responseJson(404, 'Resource not found');
         } catch (Exception $e) {
@@ -78,9 +75,7 @@ class UserController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-            if (!auth()->check()) {
-                return $this->responseJson(401, 'Unauthorized');
-            }
+            $this->authorize('create', User::class);
 
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
@@ -102,6 +97,10 @@ class UserController extends Controller
             }
     
             return $this->responseJson(200, 'User Created Successfully', $user);
+        } catch (AuthorizationException $e) {
+            return $this->responseJson(403, 'No Access');
+        } catch (ModelNotFoundException $e) {
+            return $this->responseJson(404, 'Resource not found');
         } catch (Exception $e) {
             return $this->responseJson(500, 'An error occurred', $e->getMessage());
         }
@@ -109,11 +108,9 @@ class UserController extends Controller
     public function update(Request $request, $id): JsonResponse
     {
         try {
-            if (!auth()->check()) {
-                return $this->responseJson(401, 'Unauthorized');
-            }
-
             $user = User::findOrFail($id);
+
+            $this->authorize('update', $user);
 
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
@@ -130,8 +127,10 @@ class UserController extends Controller
 
 
             return $this->responseJson(200, 'User updated successfully', $user);
+        } catch (AuthorizationException $e) {
+            return $this->responseJson(403, 'No Access');
         } catch (ModelNotFoundException $e) {
-            return $this->responseJson(404, 'User not found');
+            return $this->responseJson(404, 'Resource not found');
         } catch (Exception $e) {
             return $this->responseJson(500, 'An error occurred', $e->getMessage());
         }
@@ -140,20 +139,20 @@ class UserController extends Controller
     public function destroy($id): JsonResponse
     {
         try {
-            if (!auth()->check()) {
-                return $this->responseJson(401, 'Unauthorized');
-            }
+            $this->authorize('deleteAny', User::class);
 
             $user = User::findOrFail($id);
 
            $user->delete();
 
             return $this->responseJson(200, 'User deleted successfully', $user);
+        } catch (AuthorizationException $e) {
+            return $this->responseJson(403, 'No Access');
         } catch (ModelNotFoundException $e) {
-            return $this->responseJson(404, 'User not found');
+            return $this->responseJson(404, 'Resource not found');
         } catch (Exception $e) {
             return $this->responseJson(500, 'An error occurred', $e->getMessage());
-        } 
+        }
     }
     
     private function responseJson(int $status, string $message, $data = null)
