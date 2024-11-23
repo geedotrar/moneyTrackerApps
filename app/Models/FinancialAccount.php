@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class FinancialAccount extends Model
@@ -18,7 +19,7 @@ class FinancialAccount extends Model
     /**
      * Relationship to FinancialAccountBalance.
      */
-    public function balances()
+    public function balances(): HasMany
     {
         return $this->hasMany(Balance::class, 'financial_accounts_id');
     }

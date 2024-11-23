@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Balance extends Model
@@ -20,7 +21,7 @@ class Balance extends Model
     /**
      * Relationship to FinancialAccount.
      */
-    public function financialAccount()
+    public function financialAccount(): BelongsTo
     {
         return $this->belongsTo(FinancialAccount::class, 'financial_account_id');
     }
@@ -28,12 +29,12 @@ class Balance extends Model
     /**
      * Relationship to User.
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
     
-    public function getFormattedBalanceAttribute()
+    public function getFormattedBalanceAttribute(): string
     {
         return number_format($this->amount, 0, ',', '.');
     }
