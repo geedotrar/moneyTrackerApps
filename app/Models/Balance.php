@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Balance extends Model
 {
     use SoftDeletes;
+
+    protected $table = 'balances';  
+    
     protected $fillable = [
         'user_id',
         'financial_account_id',
