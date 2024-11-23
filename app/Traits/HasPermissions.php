@@ -2,8 +2,6 @@
 
 namespace App\Traits;
 
-use App\Models\Role;
-
 trait HasPermissions
 {
     public function hasPermission(string $permissionName): bool

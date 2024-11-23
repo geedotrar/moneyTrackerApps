@@ -5,17 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\Balance;
 use App\Models\User;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 
 class BalanceController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index(): JsonResponse
     {
         try {
-            if (!auth()->check()) {
-                return $this->responseJson(401, 'Unauthorized');
-            }
+            $this->authorize('viewAny', User::class);
 
             $balances = Balance::with('user', 'financialAccount')->get();
 
@@ -23,11 +25,9 @@ class BalanceController extends Controller
                 return $this->responseJson(404, 'Financial Account Not Found');
             }
 
-            // Grouping balances by user_id
             $responseData = $balances->groupBy('user_id')->map(function ($userBalances) {
                 $user = $userBalances->first()->user;
 
-                // Grouping by 'financial_account_id' and summing the 'amount'
                 $financialAccounts = $userBalances->groupBy(function ($balance) {
                     return $balance->financialAccount->name;
                 })->map(function ($groupedBalances, $accountName) {
@@ -57,7 +57,10 @@ class BalanceController extends Controller
             });
 
             return $this->responseJson(200, 'Get Amounts Successfully', $responseData->values()->all());
-
+        } catch (AuthorizationException $e) {
+            return $this->responseJson(403, 'No Access');
+        } catch (ModelNotFoundException $e) {
+            return $this->responseJson(404, 'Resource not found');
         } catch (Exception $e) {
             return $this->responseJson(500, 'An Error Occurred', $e->getMessage());
         }
@@ -66,12 +69,6 @@ class BalanceController extends Controller
     public function show($id): JsonResponse
     {
         try {
-            $user = auth()->user();
-
-            if (!$user->hasRole('admin') && $user->id !== (int) $id) {
-                return $this->responseJson(403, 'Forbidden');
-            }
-
             $user = User::findOrFail($id);
 
             $balances = Balance::with('financialAccount')
@@ -82,11 +79,11 @@ class BalanceController extends Controller
                 return $this->responseJson(404, 'Financial Account Not Found');
             }
 
-            // Grouping dan penjumlahan saldo (sama seperti sebelumnya)
+            $this->authorize('view', $user);
+
             $financialAccounts = $balances->groupBy(function ($balance) {
                 return $balance->financialAccount->name;
             })->map(function ($groupedBalances, $accountName) {
-                // Sum the amount for grouped financial accounts
                 $financialAccount = $groupedBalances->first()->financialAccount;
                 $totalAmount = $groupedBalances->sum('amount');
 
@@ -104,23 +101,28 @@ class BalanceController extends Controller
                 'financial_accounts' => $financialAccounts
             ]);
 
+        } catch (AuthorizationException $e) {
+            return $this->responseJson(403, 'No Access');
+        } catch (ModelNotFoundException $e) {
+            return $this->responseJson(404, 'Resource not found');
         } catch (Exception $e) {
             return $this->responseJson(500, 'An Error Occurred', $e->getMessage());
         }
     }
 
+
     public function destroy($id): JsonResponse
     {
         try {
-            if (!auth()->check()) {
-                return $this->responseJson(401, 'Unauthorized');
-            }
+            $this->authorize('deleteAny', User::class);
 
             $income = Balance::findOrFail($id);
 
             $income->delete();
             
             return $this->responseJson(200, 'Income deleted successfully', $income);
+        } catch (AuthorizationException $e) {
+            return $this->responseJson(403, 'No Access');
         } catch (ModelNotFoundException $e) {
             return $this->responseJson(404, 'Income Not Found');
         } catch (Exception $e) {

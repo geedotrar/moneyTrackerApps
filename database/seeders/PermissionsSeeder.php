@@ -11,15 +11,27 @@ class PermissionsSeeder extends Seeder
     public function run()
     {
         $adminPermissions = [
+            //USER
             ['name' => 'admin-create-users'],
             ['name' => 'admin-edit-users'],
             ['name' => 'admin-delete-users'],
             ['name' => 'admin-view-users'],
+
+            //BALANCES
+            ['name' => 'admin-create-balances'],
+            ['name' => 'admin-edit-balances'],
+            ['name' => 'admin-delete-balances'],
+            ['name' => 'admin-view-balances'],
         ];
 
         $userPermissions = [
+            //USER
             ['name' => 'user-view-users'],
             ['name' => 'user-edit-users'],
+
+            //BALANCES
+            ['name' => 'user-view-balances'],
+            ['name' => 'user-edit-balances'],
         ];
 
         // Seed admin permissions
