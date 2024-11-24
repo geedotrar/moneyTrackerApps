@@ -37,7 +37,7 @@ class BalanceController extends Controller
                     return [
                         'id' => $financialAccount->id,
                         'name' => $accountName,
-                        'amount' => $totalAmount,
+                        'amount' => number_format($totalAmount, 2, ',', '.'),
                         'created_at' => $financialAccount->created_at,
                         'updated_at' => $financialAccount->updated_at,
                     ];
@@ -90,7 +90,7 @@ class BalanceController extends Controller
                 return [
                     'id' => $financialAccount->id,
                     'name' => $accountName,
-                    'amount' => $totalAmount,
+                    'amount' => number_format($totalAmount, 2, ',', '.'),
                     'created_at' => $financialAccount->created_at,
                     'updated_at' => $financialAccount->updated_at,
                 ];

@@ -48,6 +48,14 @@ Route::middleware(['auth:api'])->group(function () {
         Route::delete('/delete/{id}', 'destroy');
     });
 
+    Route::prefix('expenses')->controller(ExpenseController::class)->group(function () {
+        Route::get('/', 'index');
+        Route::get('/{id}', 'show');
+        Route::post('/create', 'store');
+        Route::put('/update/{id}', 'update');
+        Route::delete('/delete/{id}', 'destroy');
+    });
+
     Route::prefix('categories')->controller(CategoryController::class)->group(function () {
         Route::get('/', 'index');
         Route::get('/{id}', 'show');

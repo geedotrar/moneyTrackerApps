@@ -6,17 +6,14 @@ use App\Models\User;
 
 class UserPolicy
 {
-    /**
-     * Create a new policy instance.
-     */
-     public function viewAny(User $user): bool
-     {
-         if ($user->hasPermission('admin-view-users')) {
-             return true;
-         } 
- 
-         return false;
-     }
+    public function viewAny(User $user): bool
+    {
+        if ($user->hasPermission('admin-view-users')) {
+            return true;
+        } 
+
+        return false;
+    }
 
     public function view(User $authUser, User $user): bool
     {

@@ -7,14 +7,14 @@ use App\Models\User;
 
 class BalancePolicy
 {
-     public function viewAny(Balance $user): bool
-     {
-         if ($user->hasPermission('admin-view-balances')) {
-             return true;
-         } 
- 
-         return false;
-     }
+    public function viewAny(Balance $user): bool
+    {
+        if ($user->hasPermission('admin-view-balances')) {
+            return true;
+        } 
+
+        return false;
+    }
 
     public function view(User $authUser, Balance $balance): bool
     {
